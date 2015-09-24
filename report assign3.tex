@@ -1,0 +1,199 @@
+%
+% File          : Assignment 3.tex
+% Description   : my Assign
+% Authors       : Vikram khurana
+%
+% Last Modified : Fri Dec  1 08:17:28 EST 2000
+%
+% BDOC PARAM offset=0in,0in
+
+% Page style
+
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1.3in,top=0.5in,includefoot]{geometry}
+\usepackage{graphicx}
+\title{Assignment 3}
+
+\author{vikram0602@ufl.edu, Ufid: 66921015}
+\date{17 Febuary, 2015}
+
+\begin{document}
+
+
+\maketitle
+\section{HOST File Attack:}
+a). Attack Description- \\
+In this attack, we assume that the attacker has already compromised the user's machine. So the attacker has the root password of the victim's computer.
+\\
+Since the local pairing in the "/etc/hosts" file takes more preference over the remote DNS lookup, the attacker can simply attack the victim by modifying the /etc/hosts file. So whenever the user tries to access any site from the corrupted hosts file, he will be redirected to the rogue IP.
+\\
+\\
+b). Steps taken:
+\\
+1.First a establish connection is placed betwwen DNS and user machine
+\\
+\includegraphics[scale=0.7]{1.png}
+\\Figure : The above image shows established connection when dig is done
+\\
+\\ \\ \\ \\
+2.Open the host file on users machine
+\\
+\includegraphics{3.png}
+\\Figure : The above image shows how to open the host file on the users machine 
+\\ 
+\\
+3. Add entry to the ”/etc/hosts” file (command used sudo vi /etc/hosts)\\ 
+Ex: 127.0.0.1 www.google.com\\ 
+Here you are adding entry for www.amazon.com to point towards the localhost machine. The attacker can replace the 127.0.0.1 to any of his rogue IP\\
+\includegraphics[scale=0.7]{2.png}
+\\
+\\
+Figure: Compromised ”/etc/hosts” file having a rogue entry for www.amazon.com
+\\
+\\
+4. Now when user tries opening amazon.com on his browser then the machine uses the /etc/hosts file to resolve the name, thus pointing to 127.0.0.1
+\\
+\includegraphics[scale=0.7]{4.png}
+\\Figure: wwwamazon.com pointing to 127.0.0.1
+\\ 
+\\
+c).Real World Problem and viability:
+\\
+Since victims generally don’t look at the /etc/hosts file every time, the attacker can enter these rogue entries in the hosts file without the victims knowledge easily.The victim won’t even realize that his hosts file is compromised and he will be pointed to a rogue IP, the attacker can do a phishing attack by creating a template page looking similar to amazon.com (or any other website the attacker wants to hack on) and make the user try to login and give details.
+\\
+In the previous example shown above amzon.com is redirected to a localhost page which when used as an attack can be designed to look as amazon.com home page and when user logs into it all his details are recieved by the adversary.
+\\
+To prevent this kind of attack user needs to prevent his machine from any external adversary by using a means of strong passwords.s
+Hacking computers for access is becoming more and more hard with the technology increase and the users becoming more aware about the security aspects thus making this sort of attack less viable.
+\\
+\\
+\section{Host-Level Response Spoofing:}
+a). Attack Description:
+\\
+This attack requires three machines namely-
+\\User\\DNS Server\\Attacker\\
+Network Setup :\\
+\\ Host-Only Network
+\\b. NAT/NAT Network\\
+Host-Only Network makes all the three Virtual machines to be in the same network.And the NAT/NAT Network makes these machines to connect to Internet.\\
+I have connected these machines to the Internet to test DNS attacks on other sites as well. Here I am taking an example attack on the www.example.com to demonstrate the attack.\\
+The entry in DNS server for www.example.com points to "192.168.0.10"
+\\
+\\
+b). Steps taken:
+\\
+1. Check whether the attacker can sniff the DNS packets from user to DNS server.
+\\2. Here the attacker(192.168.0.200) can see the query sent by the user(192.168.0.100) to the DNS server(192.168.0.10)
+3. Attacker spoof response using netwag 105 tool: 
+\\
+-hostname is set as "www.example.com"\\
+-hostname IP is set as 1.2.3.4\\
+-authoritive name server as "ns.examole.com"\\
+-authns IP as 1.2.3.5\\
+-TTl is set for 1000 seconds\\
+-and initialization type as raw\\
+-Then Generate and Run\\
+\\
+\includegraphics[scale=0.5]{ques2-3.png}
+\\Figure: Output of the Netwag command showing the request and responses, notice that the response with "1.2.3.4" (spoofed response) was received even before the original response
+\\  \\
+If you notice the above image you can clearly see that the question requested by the user and answer constructed by the tool and the spoofed response and the response by the actual DNS server in order (192.168.0.10 DNS entry in DNS server).
+\\
+\\
+\includegraphics[scale=0.7]{ques2-2.png}
+\\Figure: Output of the DIG command run by the user showing the spoofed response by attacker
+\\
+\\
+c). Real World Problem and viability: 
+\\
+This attack requires attacker to be able to sniff the network for the packets and send the spoofed response by using netwag tool.
+For this to happen attacker has to be connected to network. Once the network is compromised the attacker can easily launch an attack on the user.This type of attacks generally come from someone from inside the network(Insiders). This attack also has the same consequences on the victim as the previous one like phishing attacks.
+\\
+The more you make the network secure the harder it becomes for the attacker. For this attack the attacker can only attack the predefined queries which he ran using the netwag tool. Here, I used the command for www.example.com.The attacker has to run this netwag tool again with a different inputs to attack a different requests.Baiscally the attacker has to do this sort of spoofing for each and every GET/PUT request from theuser, which is a very hard process. Thus making it less viable and scalable. An even better way is to use the cache poisoning attack.\\ \\
+
+\section{Server-Level Response Spoofing:}
+a). Attack Description:
+\\
+To describe this i  have used the virtual machines which  are connected to host-only and NAT mode.
+\\This attack uses the DNS cache feature as the target and attacks it by sending spoofed responses when the DNS server tries to request the lookup from the root DNS servers. To do a successful attack the attacker has to be on the same network as the DNS server,here the DNS server uses the NAT network to communicate to the root DNS servers , so the attacker is also connected to NAT network. Thus enabling the attacker to sniff the network for the queries of DNS server.
+\\
+\\
+b). Steps taken:
+\\
+1. First we make sure that  our attacker can sniff packets from DNS server to the root DNS server o internet.
+For this both attacker and DNS server has to be connected to internet of same server.\\
+\includegraphics[scale=0.5]{ques3-2.png}
+\\Figure: it shows how the attcker is connected to NAT
+ \\
+\includegraphics[scale=0.5]{ques3-3.png}
+\\Figure: it shows how the DNS server is connected to NAT
+ \\ \\
+2. Capture the initial response for www.google.com on netwag.
+\\
+\includegraphics[scale=0.5]{ques3.png}
+\\Figure:The initial response given by the dig command for google.com on netwag
+ \\ \\
+3. Attacker spoofs the response from the root DNS to DNS server using netwag 105 tool(Eth0 is
+NAT Network)\\
+4. Wireshark log showing that the spoofed response is accepted by the root DNS server. Now since it is accepted by the server, it makes an entry for www.google.com in its cache. So we don’t have to run the netwag all the time and send spoofed responses for every request.
+\\
+\includegraphics[scale=0.5]{ques3-5.png}
+\\Figure:Wireshark log showing the request forwarded to the root DNS server through NAT network and the spoofed response sent to DNS server posing as the root server by using the netwag
+ \\ \\
+
+5. Check the effect of attack using DIG command from the victim machine. It shows the spoofed response which the attacker sent to DNS server.\\
+\includegraphics[scale=0.5]{ques3-4.png}
+\\Figure: Dig command showing the response of google.com .Here we can see the attack being successful. The user can see a fake ip given by the attacker to the DNS cache.
+ \\ \\
+c). Real World Problem and viability: 
+\\
+The implication of this attack can be very serious as the adversary can redirect the user to some other website of his choice and make user to input his username and password thus giving a breach in security.
+\\
+If the attacker and the DNS server are on the same network the attacker can easily see the transaction id and reply back to the DNS server with the rogue addresses. But in general they wont be on the same network thus making this attack less feasible.\\
+\section{Kaminsky Attack:}
+a). Attack Description:
+\\All the Virtual machines will be in Host-Only network. I have created a second DNS server which handles the forward request for the domain "www.dnsphishinglab.com". Since the second BIND server has entries for the ”dnsphishinglab.com” it returns the IP we kept in the settings files. Thus the packets won’t leak to the internet.
+\\I have also disabled my laptop wifi to make sure that there is no internet connectivity with my machine. \\
+Also I made sure that I am running pacgen in the correct eth host. If we want to try with internet "on" , then we have to check the eth host and make sure we run in that network only.
+\\
+b). Steps taken:
+1. Check the initial response returned by the DIG command. Note that it points to the ip provided in the 2nd DNS server(192.168.0.30).\\
+\includegraphics[scale=0.5]{ques44-0.png}
+\\Figure: Request sent to first DNS(192.168.0.10) 
+ \\ \\
+\includegraphics[scale=0.5]{ques44-1.png}
+\\Figure: Request sent from first DNS  to second bind server
+ \\ \\
+2.  Create a payload2 file using payloadgen.py and then use paygen.c for a DNS request and check the query and response on wireshark.
+\\
+3. Once you have the payload for making a proper DNS request, convert the pacgen.c to make requests for varied subdomains under dnsfishing.com. So that it clears the cache of the server. \\
+4. Now make changes in second DNS for rouge IP address and create payload4 using payloadgen2.py and then create request.
+\\
+5. Now the bind server send some forge responses to our DNS server. \\
+6. Make the responses use a random generated transaction id and try to hit the DNS server.\\
+7. Created a loop in the pacgen.c to make random requests followed by sending 1000 responses for each request. Hoping that we match atleast one of the response.\\
+8. If it recevies the response from out pacgen before the 2nd Bind server and the transaction matches then the DNS server makes an entry in the cache and nameserver IP is also stored.
+\\
+\includegraphics[scale=0.5]{ques44-2.png}
+\\Figure: wireshark log showing the random request generated by the pacgen and the spoofed responses I am sending to DNS server hoping that any one of the transaction ID matches the DNS server queries transaction id. (id= 0x7cc2)
+ \\ \\
+\includegraphics[scale=0.5]{ques44-3.png}
+\\Figure:spoofed response with  id= 0x54f8
+ \\ \\
+c).Code written:
+\\
+First I wrote a python script to create the payload files both for query and forge response. Next  I updated the pacgen.c file for running the responses for 1000 times so as to get a hit atlleast once.
+Next a load\_responsepayload() function is added to create response using the payload generated by the forge IP address.
+\\ \\
+d). Real World Problem and viability: \\
+In "Kaminsky attack" you attack the the DNS server by requesting for "8986.dnsphishinglab.com" instead of "www.dnsphishinglab.com". Since the name is unique and it wont be in the DNS server cache,thus making the DNS server request its next DNS server about the request.\\
+This is easy if the attacker can guess the id before the response comes from the second DNS server. The attacker can simply run this program for a longer time and wait for a hit. Once he has a hit , the entry on the DNS server cache will be there till it gets cleared.\\
+Using a random port number or capitilisation in the query from one DNS server to another can be used to avoid such kind of attac. All these types make the attack a bit harder rather than making them impossible. \\
+This attack can also be prevented by using DNSSec at the DNS server.Then the DNS server will just ignore these fake responses as they are not signed by the valid authority. But this method also has problems like incremental deployability and resource imbalances etc.
+\\
+The Secure Sockets Layer (SSL) is only a partial protection against being redirected to malicious websites. Putting up a fake BankOfSteve.com website will have the wrong SSL certificate name (which is a warning to the user who's paying attention), but the great majority of users skip right through those warnings.
+
+
+\end{document}
